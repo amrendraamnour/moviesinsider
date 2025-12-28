@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { Post } from "@/lib/wordpress.d";
@@ -54,7 +53,7 @@ export async function PostCard({ post }: { post: Post }) {
       <div className="flex flex-col gap-4">
         <div className="h-48 w-full overflow-hidden relative rounded-md border flex items-center justify-center bg-muted">
           {media?.source_url ? (
-            <Image
+            <img
               className="h-full w-full object-cover"
               src={media.source_url}
               alt={post.title?.rendered || "Post thumbnail"}

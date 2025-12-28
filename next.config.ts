@@ -3,6 +3,19 @@ import type { NextConfig } from "next";
 const wordpressHostname = process.env.WORDPRESS_HOSTNAME;
 const wordpressUrl = process.env.WORDPRESS_URL;
 
+function extractHostname(value?: string) {
+  if (!value) return undefined;
+  const trimmed = value.replace(/^\s+|\s+$/g, "").replace(/^"|"$/g, "");
+  try {
+    return new URL(trimmed).hostname;
+  } catch (e) {
+    return trimmed || undefined;
+  }
+}
+
+const resolvedWordpressHostname =
+  extractHostname(wordpressHostname) || extractHostname(wordpressUrl);
+
 // Allowed dev origins to permit cross-origin requests to `/_next/*` during development.
 // Can be set via `ALLOWED_DEV_ORIGINS` (comma-separated). Defaults include common localhost origins.
 const allowedDevOriginsEnv = process.env.ALLOWED_DEV_ORIGINS;
@@ -28,19 +41,18 @@ const nextConfig: NextConfig = {
   output: "standalone",
   allowedDevOrigins,
   images: {
-    // Allow images from the configured WordPress hostname (both http and https)
-    domains: wordpressHostname ? [wordpressHostname] : [],
-    remotePatterns: wordpressHostname
+    // Allow images from the configured WordPress hostname via remotePatterns
+    remotePatterns: resolvedWordpressHostname
       ? [
           {
             protocol: "https",
-            hostname: wordpressHostname,
+            hostname: resolvedWordpressHostname,
             port: "",
             pathname: "/**",
           },
           {
             protocol: "http",
-            hostname: wordpressHostname,
+            hostname: resolvedWordpressHostname,
             port: "",
             pathname: "/**",
           },
