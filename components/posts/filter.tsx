@@ -18,11 +18,13 @@ interface Author {
 interface Tag {
   id: number;
   name: string;
+  slug?: string;
 }
 
 interface Category {
   id: number;
   name: string;
+  slug?: string;
 }
 
 interface FilterPostsProps {
@@ -46,6 +48,34 @@ export function FilterPosts({
 
   const handleFilterChange = (type: string, value: string) => {
     console.log(`Filter changed: ${type} -> ${value}`);
+    // For pretty URLs use `/posts/category/<slug>`, `/posts/tag/<slug>`, `/posts/author/<slug>` when filtering by those types.
+    if (type === "category") {
+      if (value === "all") {
+        router.push(`/posts`);
+      } else {
+        router.push(`/posts/category/${value}`);
+      }
+      return;
+    }
+
+    if (type === "tag") {
+      if (value === "all") {
+        router.push(`/posts`);
+      } else {
+        router.push(`/posts/tag/${value}`);
+      }
+      return;
+    }
+
+    if (type === "author") {
+      if (value === "all") {
+        router.push(`/posts`);
+      } else {
+        router.push(`/posts/author/${value}`);
+      }
+      return;
+    }
+
     const newParams = new URLSearchParams(window.location.search);
     newParams.delete("page");
     value === "all" ? newParams.delete(type) : newParams.set(type, value);
@@ -73,7 +103,7 @@ export function FilterPosts({
         <SelectContent>
           <SelectItem value="all">All Tags</SelectItem>
           {tags.map((tag) => (
-            <SelectItem key={tag.id} value={tag.id.toString()}>
+            <SelectItem key={tag.id} value={tag.slug || tag.id.toString()}>
               {tag.name}
             </SelectItem>
           ))}
@@ -94,7 +124,10 @@ export function FilterPosts({
         <SelectContent>
           <SelectItem value="all">All Categories</SelectItem>
           {categories.map((category) => (
-            <SelectItem key={category.id} value={category.id.toString()}>
+            <SelectItem
+              key={category.id}
+              value={category.slug || category.id.toString()}
+            >
               {category.name}
             </SelectItem>
           ))}

@@ -240,20 +240,53 @@ export async function getAllPosts(filterParams?: {
   category?: string;
   search?: string;
 }): Promise<Post[]> {
-  const query: Record<string, any> = {
-    _embed: true,
-    per_page: 100,
-  };
+  // Fetch all posts by paginating through the WordPress API.
+  // Uses `per_page=100` (WP max) and iterates until all pages are retrieved.
+  if (!isConfigured) return [];
 
-  if (filterParams?.search) query.search = filterParams.search;
-  if (filterParams?.author) query.author = filterParams.author;
-  if (filterParams?.tag) query.tags = filterParams.tag;
-  if (filterParams?.category) query.categories = filterParams.category;
+  try {
+    const allPosts: Post[] = [];
+    let page = 1;
+    let hasMore = true;
 
-  return wordpressFetchGraceful<Post[]>("/wp-json/wp/v2/posts", [], query, [
-    "wordpress",
-    "posts",
-  ]);
+    while (hasMore) {
+      const query: Record<string, any> = {
+        _embed: true,
+        per_page: 100,
+        page,
+      };
+
+      if (filterParams?.search) query.search = filterParams.search;
+      if (filterParams?.author) query.author = filterParams.author;
+      if (filterParams?.tag) query.tags = filterParams.tag;
+      if (filterParams?.category) query.categories = filterParams.category;
+
+      const response = await wordpressFetchPaginated<Post[]>(
+        "/wp-json/wp/v2/posts",
+        query,
+        ["wordpress", "posts"]
+      );
+
+      allPosts.push(...response.data);
+      hasMore = page < response.headers.totalPages;
+      page++;
+    }
+
+    return allPosts;
+  } catch (e) {
+    console.warn("Failed to fetch all posts, falling back to graceful fetch", e);
+    // Fallback to a single graceful fetch (up to 100 posts) if pagination fails
+    const fallbackQuery: Record<string, any> = { _embed: true, per_page: 100 };
+    if (filterParams?.search) fallbackQuery.search = filterParams.search;
+    if (filterParams?.author) fallbackQuery.author = filterParams.author;
+    if (filterParams?.tag) fallbackQuery.tags = filterParams.tag;
+    if (filterParams?.category) fallbackQuery.categories = filterParams.category;
+
+    return wordpressFetchGraceful<Post[]>("/wp-json/wp/v2/posts", [], fallbackQuery, [
+      "wordpress",
+      "posts",
+    ]);
+  }
 }
 
 export async function getPostById(id: number): Promise<Post> {
