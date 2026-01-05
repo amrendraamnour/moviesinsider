@@ -7,5 +7,5 @@ type SiteConfig = {
 export const siteConfig: SiteConfig = {
   site_name: "MOVIE INSIDER",
   site_description: "MOVIES | REVIEWS | TRAILERS | SHOWTIMES",
-  site_domain: "https://movieinsider.vercel.app/",
+  site_domain: "https://movieinsider.vercel.app",
 };

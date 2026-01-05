@@ -7,9 +7,16 @@ import {
   getFeaturedMediaById,
   getAuthorById,
   getCategoryById,
+  getCategoryBySlug,
 } from "@/lib/wordpress";
 
-export async function PostCard({ post }: { post: Post }) {
+export async function PostCard({
+  post,
+  selectedCategorySlug,
+}: {
+  post: Post;
+  selectedCategorySlug?: string;
+}) {
   let media = null;
   let author = null;
   try {
@@ -34,9 +41,26 @@ export async function PostCard({ post }: { post: Post }) {
   });
   let category = null;
   try {
-    category = post.categories?.[0]
-      ? await getCategoryById(post.categories[0])
-      : null;
+    // If a category slug is provided by the parent (e.g. when listing by
+    // category), prefer that category when the post belongs to it. This
+    // prevents showing an unrelated first category (e.g. "Bollywood") when
+    // filtering by another category (e.g. "Sports").
+    if (selectedCategorySlug) {
+      try {
+        const catObj = await getCategoryBySlug(selectedCategorySlug);
+        if (catObj && post.categories?.includes(catObj.id)) {
+          category = catObj;
+        }
+      } catch (e) {
+        // ignore and fallback to first category
+      }
+    }
+
+    if (!category) {
+      category = post.categories?.[0]
+        ? await getCategoryById(post.categories[0])
+        : null;
+    }
   } catch (e) {
     console.warn("Failed to fetch category:", e);
     category = null;

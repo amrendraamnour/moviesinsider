@@ -30,10 +30,10 @@ export const dynamic = "auto";
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = (await params) as { slug?: string };
   return {
-    title: `Posts in ${slug}`,
-    description: `Posts in category ${slug}`,
+    title: `${slug}`,
+    description: `${slug}`,
   };
 }
 
@@ -41,11 +41,14 @@ export default async function Page({
   params,
   searchParams,
 }: {
-  params: { slug: string };
+  params: { slug: string } | Promise<{ slug: string }>;
   searchParams: { page?: string; search?: string };
 }) {
-  const { slug } = params;
-  const { page: pageParam, search } = searchParams || {};
+  const { slug } = (await params) as { slug?: string };
+  const { page: pageParam, search } = (await searchParams) as {
+    page?: string;
+    search?: string;
+  };
 
   const page = pageParam ? parseInt(pageParam, 10) : 1;
   const postsPerPage = 9;
@@ -56,7 +59,7 @@ export default async function Page({
     search ? searchCategories(search) : getAllCategories(),
   ]);
 
-  const category = await getCategoryBySlug(slug);
+  const category = slug ? await getCategoryBySlug(slug) : undefined;
   const categoryId = category?.id;
 
   const postsResponse = await getPostsByCategoryPaginated(
@@ -103,7 +106,7 @@ export default async function Page({
           {posts.length > 0 ? (
             <div className="grid md:grid-cols-3 gap-4">
               {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
+                <PostCard key={post.id} post={post} selectedCategorySlug={slug} />
               ))}
             </div>
           ) : (

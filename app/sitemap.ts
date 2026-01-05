@@ -51,5 +51,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  return [...staticUrls, ...postUrls];
+  // Root sitemap will reference the main site pages and posts only.
+  // Individual maps are available at /sitemap-pages.xml, /sitemap-categories.xml,
+  // /sitemap-posts.xml and /sitemap-tags.xml.
+  const indexUrls: MetadataRoute.Sitemap = [
+    ...staticUrls,
+    ...postUrls,
+    {
+      url: `${siteConfig.site_domain}/sitemap-pages.xml`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${siteConfig.site_domain}/sitemap-categories.xml`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${siteConfig.site_domain}/sitemap-posts.xml`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.3,
+    },
+    {
+      url: `${siteConfig.site_domain}/sitemap-tags.xml`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+  ];
+
+  return indexUrls;
 }

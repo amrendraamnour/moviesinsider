@@ -30,10 +30,10 @@ export const dynamic = "auto";
 export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = (await params) as { slug?: string };
   return {
-    title: `Posts tagged ${slug}`,
-    description: `Posts tagged ${slug}`,
+    title: `${slug}`,
+    description: `${slug}`,
   };
 }
 
@@ -41,11 +41,14 @@ export default async function Page({
   params,
   searchParams,
 }: {
-  params: { slug: string };
+  params: { slug: string } | Promise<{ slug: string }>;
   searchParams: { page?: string; search?: string };
 }) {
-  const { slug } = params;
-  const { page: pageParam, search } = searchParams || {};
+  const { slug } = (await params) as { slug?: string };
+  const { page: pageParam, search } = (await searchParams) as {
+    page?: string;
+    search?: string;
+  };
 
   const page = pageParam ? parseInt(pageParam, 10) : 1;
   const postsPerPage = 9;
@@ -56,7 +59,7 @@ export default async function Page({
     search ? searchCategories(search) : getAllCategories(),
   ]);
 
-  const tag = await getTagBySlug(slug);
+  const tag = slug ? await getTagBySlug(slug):undefined;
   const tagId = tag?.id;
 
   const postsResponse = await getPostsByTagPaginated(Number(tagId || 0), page, postsPerPage);
