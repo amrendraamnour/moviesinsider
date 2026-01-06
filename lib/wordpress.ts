@@ -315,10 +315,15 @@ export async function getCategoryById(id: number): Promise<Category> {
   return wordpressFetch<Category>(`/wp-json/wp/v2/categories/${id}`);
 }
 
-export async function getCategoryBySlug(slug: string): Promise<Category> {
-  return wordpressFetch<Category[]>("/wp-json/wp/v2/categories", { slug }).then(
-    (categories) => categories[0]
+export async function getCategoryBySlug(
+  slug: string
+): Promise<Category | undefined> {
+  const categories = await wordpressFetchGraceful<Category[]>(
+    "/wp-json/wp/v2/categories",
+    [],
+    { slug }
   );
+  return categories[0];
 }
 
 export async function getPostsByCategory(categoryId: number): Promise<Post[]> {
@@ -346,10 +351,13 @@ export async function getTagById(id: number): Promise<Tag> {
   return wordpressFetch<Tag>(`/wp-json/wp/v2/tags/${id}`);
 }
 
-export async function getTagBySlug(slug: string): Promise<Tag> {
-  return wordpressFetch<Tag[]>("/wp-json/wp/v2/tags", { slug }).then(
-    (tags) => tags[0]
+export async function getTagBySlug(slug: string): Promise<Tag | undefined> {
+  const tags = await wordpressFetchGraceful<Tag[]>(
+    "/wp-json/wp/v2/tags",
+    [],
+    { slug }
   );
+  return tags[0];
 }
 
 export async function getAllPages(): Promise<Page[]> {
@@ -406,14 +414,22 @@ export async function getPostsByCategorySlug(
   categorySlug: string
 ): Promise<Post[]> {
   const category = await getCategoryBySlug(categorySlug);
-  return wordpressFetch<Post[]>("/wp-json/wp/v2/posts", {
-    categories: category.id,
-  });
+  if (!category) return [];
+  return wordpressFetchGraceful<Post[]>(
+    "/wp-json/wp/v2/posts",
+    [],
+    { categories: category.id }
+  );
 }
 
 export async function getPostsByTagSlug(tagSlug: string): Promise<Post[]> {
   const tag = await getTagBySlug(tagSlug);
-  return wordpressFetch<Post[]>("/wp-json/wp/v2/posts", { tags: tag.id });
+  if (!tag) return [];
+  return wordpressFetchGraceful<Post[]>(
+    "/wp-json/wp/v2/posts",
+    [],
+    { tags: tag.id }
+  );
 }
 
 export async function getFeaturedMediaById(id: number): Promise<FeaturedMedia> {
