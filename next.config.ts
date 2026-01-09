@@ -32,9 +32,7 @@ const allowedDevOrigins = allowedDevOriginsEnv
       "http://localhost",
       "127.0.0.1",
       "localhost",
-      "http://10.0.3.35:3000",
-      "http://10.0.3.35",
-      "https://movieinsider.vercel.app/"
+      "https://movieinsider.vercel.app"
     ];
 
 const nextConfig: NextConfig = {

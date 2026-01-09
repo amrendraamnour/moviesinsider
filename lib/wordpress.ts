@@ -311,8 +311,13 @@ export async function getAllCategories(): Promise<Category[]> {
   );
 }
 
-export async function getCategoryById(id: number): Promise<Category> {
-  return wordpressFetch<Category>(`/wp-json/wp/v2/categories/${id}`);
+export async function getCategoryById(id: number): Promise<Category | undefined> {
+  try {
+    return await wordpressFetch<Category>(`/wp-json/wp/v2/categories/${id}`);
+  } catch (e) {
+    console.warn(`getCategoryById failed for ${id}:`, e);
+    return undefined;
+  }
 }
 
 export async function getCategoryBySlug(
@@ -389,8 +394,13 @@ export async function getAllAuthors(): Promise<Author[]> {
   );
 }
 
-export async function getAuthorById(id: number): Promise<Author> {
-  return wordpressFetch<Author>(`/wp-json/wp/v2/users/${id}`);
+export async function getAuthorById(id: number): Promise<Author | undefined> {
+  try {
+    return await wordpressFetch<Author>(`/wp-json/wp/v2/users/${id}`);
+  } catch (e) {
+    console.warn(`getAuthorById failed for ${id}:`, e);
+    return undefined;
+  }
 }
 
 export async function getAuthorBySlug(slug: string): Promise<Author> {
@@ -432,8 +442,13 @@ export async function getPostsByTagSlug(tagSlug: string): Promise<Post[]> {
   );
 }
 
-export async function getFeaturedMediaById(id: number): Promise<FeaturedMedia> {
-  return wordpressFetch<FeaturedMedia>(`/wp-json/wp/v2/media/${id}`);
+export async function getFeaturedMediaById(id: number): Promise<FeaturedMedia | undefined> {
+  try {
+    return await wordpressFetch<FeaturedMedia>(`/wp-json/wp/v2/media/${id}`);
+  } catch (e) {
+    console.warn(`getFeaturedMediaById failed for ${id}:`, e);
+    return undefined;
+  }
 }
 
 export async function searchCategories(query: string): Promise<Category[]> {
