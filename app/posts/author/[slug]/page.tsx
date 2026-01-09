@@ -26,6 +26,7 @@ import { SearchInput } from "@/components/posts/search-input";
 
 import type { Metadata } from "next";
 import BackButton from "@/components/back";
+import { Suspense } from "react";
 
 export const dynamic = "auto";
 export const revalidate = 60;
@@ -89,7 +90,9 @@ export default async function Page({
           </Prose>
 
           <div className="space-y-4">
-            <SearchInput defaultValue={search} />
+            <Suspense fallback={<div className="h-10 bg-muted rounded animate-pulse" />}>
+              <SearchInput defaultValue={search} />
+            </Suspense>
 
             <FilterPosts
               authors={authors}
