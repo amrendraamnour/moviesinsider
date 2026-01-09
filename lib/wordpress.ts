@@ -521,6 +521,51 @@ export async function getAllPostSlugs(): Promise<{ slug: string }[]> {
   }
 }
 
+// Generate static params for categories
+export async function getAllCategorySlugs(): Promise<{ slug: string }[]> {
+  if (!isConfigured) return [];
+
+  try {
+    const categories = await getAllCategories();
+    return categories
+      .filter((cat) => cat.slug)
+      .map((cat) => ({ slug: cat.slug }));
+  } catch {
+    console.warn("WordPress unavailable, skipping static generation for categories");
+    return [];
+  }
+}
+
+// Generate static params for tags
+export async function getAllTagSlugs(): Promise<{ slug: string }[]> {
+  if (!isConfigured) return [];
+
+  try {
+    const tags = await getAllTags();
+    return tags
+      .filter((tag) => tag.slug)
+      .map((tag) => ({ slug: tag.slug }));
+  } catch {
+    console.warn("WordPress unavailable, skipping static generation for tags");
+    return [];
+  }
+}
+
+// Generate static params for authors
+export async function getAllAuthorSlugs(): Promise<{ slug: string }[]> {
+  if (!isConfigured) return [];
+
+  try {
+    const authors = await getAllAuthors();
+    return authors
+      .filter((author) => author.slug)
+      .map((author) => ({ slug: author.slug }));
+  } catch {
+    console.warn("WordPress unavailable, skipping static generation for authors");
+    return [];
+  }
+}
+
 // Enhanced pagination functions for specific queries
 export async function getPostsByCategoryPaginated(
   categoryId: number,

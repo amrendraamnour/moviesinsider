@@ -7,6 +7,7 @@ import {
   searchTags,
   searchCategories,
   getCategoryBySlug,
+  getAllCategorySlugs,
 } from "@/lib/wordpress";
 
 import {
@@ -28,6 +29,10 @@ import BackButton from "@/components/back";
 
 export const dynamic = "auto";
 export const revalidate = 60;
+
+export async function generateStaticParams() {
+  return await getAllCategorySlugs();
+}
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const { slug } = (await params) as { slug?: string };
