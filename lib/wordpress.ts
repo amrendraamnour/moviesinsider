@@ -523,45 +523,78 @@ export async function getAllPostSlugs(): Promise<{ slug: string }[]> {
 
 // Generate static params for categories
 export async function getAllCategorySlugs(): Promise<{ slug: string }[]> {
-  if (!isConfigured) return [];
+  if (!isConfigured) {
+    console.warn(
+      "WORDPRESS_URL not configured — getAllCategorySlugs will return empty. Set WORDPRESS_URL in Vercel environment variables."
+    );
+    return [];
+  }
 
   try {
     const categories = await getAllCategories();
+    if (!categories || categories.length === 0) {
+      console.warn(
+        "No categories returned from WordPress during build. This will cause category pages to 404 in production."
+      );
+      return [];
+    }
     return categories
       .filter((cat) => cat.slug)
       .map((cat) => ({ slug: cat.slug }));
-  } catch {
-    console.warn("WordPress unavailable, skipping static generation for categories");
+  } catch (e) {
+    console.warn("WordPress unavailable, skipping static generation for categories", e);
     return [];
   }
 }
 
 // Generate static params for tags
 export async function getAllTagSlugs(): Promise<{ slug: string }[]> {
-  if (!isConfigured) return [];
+  if (!isConfigured) {
+    console.warn(
+      "WORDPRESS_URL not configured — getAllTagSlugs will return empty. Set WORDPRESS_URL in Vercel environment variables."
+    );
+    return [];
+  }
 
   try {
     const tags = await getAllTags();
+    if (!tags || tags.length === 0) {
+      console.warn(
+        "No tags returned from WordPress during build. This will cause tag pages to 404 in production."
+      );
+      return [];
+    }
     return tags
       .filter((tag) => tag.slug)
       .map((tag) => ({ slug: tag.slug }));
-  } catch {
-    console.warn("WordPress unavailable, skipping static generation for tags");
+  } catch (e) {
+    console.warn("WordPress unavailable, skipping static generation for tags", e);
     return [];
   }
 }
 
 // Generate static params for authors
 export async function getAllAuthorSlugs(): Promise<{ slug: string }[]> {
-  if (!isConfigured) return [];
+  if (!isConfigured) {
+    console.warn(
+      "WORDPRESS_URL not configured — getAllAuthorSlugs will return empty. Set WORDPRESS_URL in Vercel environment variables."
+    );
+    return [];
+  }
 
   try {
     const authors = await getAllAuthors();
+    if (!authors || authors.length === 0) {
+      console.warn(
+        "No authors returned from WordPress during build. This will cause author pages to 404 in production."
+      );
+      return [];
+    }
     return authors
       .filter((author) => author.slug)
       .map((author) => ({ slug: author.slug }));
-  } catch {
-    console.warn("WordPress unavailable, skipping static generation for authors");
+  } catch (e) {
+    console.warn("WordPress unavailable, skipping static generation for authors", e);
     return [];
   }
 }
