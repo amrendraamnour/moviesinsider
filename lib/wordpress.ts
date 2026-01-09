@@ -75,6 +75,16 @@ async function wordpressFetch<T>(
   });
 
   if (!response.ok) {
+    // Log non-OK statuses (e.g., 304 Not Modified, 4xx/5xx) with key cache headers
+    const responseHeaders = Object.fromEntries(response.headers.entries());
+    console.warn(`WP fetch non-OK: ${response.status} ${response.statusText} for ${url}`, {
+      headers: {
+        etag: responseHeaders["etag"],
+        "last-modified": responseHeaders["last-modified"],
+        "cache-control": responseHeaders["cache-control"],
+      },
+    });
+
     throw new WordPressAPIError(
       `WordPress API request failed: ${response.statusText}`,
       response.status,
@@ -139,6 +149,16 @@ async function wordpressFetchPaginated<T>(
   });
 
   if (!response.ok) {
+    // Log non-OK statuses (e.g., 304 Not Modified, 4xx/5xx) with key cache headers
+    const responseHeaders = Object.fromEntries(response.headers.entries());
+    console.warn(`WP paginated fetch non-OK: ${response.status} ${response.statusText} for ${url}`, {
+      headers: {
+        etag: responseHeaders["etag"],
+        "last-modified": responseHeaders["last-modified"],
+        "cache-control": responseHeaders["cache-control"],
+      },
+    });
+
     throw new WordPressAPIError(
       `WordPress API request failed: ${response.statusText}`,
       response.status,
