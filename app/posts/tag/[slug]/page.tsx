@@ -7,7 +7,6 @@ import {
   searchTags,
   searchCategories,
   getTagBySlug,
-  getAllTagSlugs,
 } from "@/lib/wordpress";
 
 import {
@@ -26,20 +25,19 @@ import { SearchInput } from "@/components/posts/search-input";
 
 import type { Metadata } from "next";
 import BackButton from "@/components/back";
-import { Suspense } from "react";
 
 export const dynamic = "auto";
 export const revalidate = 60;
 
-export async function generateStaticParams() {
-  return await getAllTagSlugs();
-}
+export async function generateMetadata({ params }: { params: Promise<{ slug?: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  if (!slug) return { title: "Posts tagged", description: "Posts tagged" };
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const { slug } = (await params) as { slug?: string };
+  const tag = await getTagBySlug(slug);
+  const title = tag?.name || slug;
   return {
-    title: `${slug}`,
-    description: `${slug}`,
+    title: `Posts tagged ${title}`,
+    description: `Posts tagged ${title}`,
   };
 }
 
@@ -47,14 +45,11 @@ export default async function Page({
   params,
   searchParams,
 }: {
-  params: { slug: string } | Promise<{ slug: string }>;
-  searchParams: { page?: string; search?: string };
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string; search?: string }>;
 }) {
-  const { slug } = (await params) as { slug?: string };
-  const { page: pageParam, search } = (await searchParams) as {
-    page?: string;
-    search?: string;
-  };
+  const { slug } = await params;
+  const { page: pageParam, search } = (await searchParams) || {};
 
   const page = pageParam ? parseInt(pageParam, 10) : 1;
   const postsPerPage = 9;
@@ -65,10 +60,17 @@ export default async function Page({
     search ? searchCategories(search) : getAllCategories(),
   ]);
 
-  const tag = slug ? await getTagBySlug(slug):undefined;
+  const tag = await getTagBySlug(slug);
   const tagId = tag?.id;
 
-  const postsResponse = await getPostsByTagPaginated(Number(tagId || 0), page, postsPerPage);
+  let postsResponse = { data: [], headers: { total: 0, totalPages: 0 } } as {
+    data: any[];
+    headers: { total: number; totalPages: number };
+  };
+
+  if (tag && tagId) {
+    postsResponse = await getPostsByTagPaginated(Number(tagId), page, postsPerPage);
+  }
 
   const { data: posts, headers } = postsResponse;
   const { total, totalPages } = headers;
@@ -93,9 +95,7 @@ export default async function Page({
           </Prose>
 
           <div className="space-y-4">
-            <Suspense fallback={<div className="h-10 bg-muted rounded animate-pulse" />}>
-              <SearchInput defaultValue={search} />
-            </Suspense>
+            <SearchInput defaultValue={search} />
 
             <FilterPosts
               authors={authors}
