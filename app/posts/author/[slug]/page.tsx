@@ -7,7 +7,6 @@ import {
   searchTags,
   searchCategories,
   getAuthorBySlug,
-  getAllAuthorSlugs,
 } from "@/lib/wordpress";
 
 import {
@@ -26,17 +25,12 @@ import { SearchInput } from "@/components/posts/search-input";
 
 import type { Metadata } from "next";
 import BackButton from "@/components/back";
-import { Suspense } from "react";
 
 export const dynamic = "auto";
 export const revalidate = 60;
 
-export async function generateStaticParams() {
-  return await getAllAuthorSlugs();
-}
-
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const { slug } = params;
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
   return {
     title: `Posts by ${slug}`,
     description: `Posts by ${slug}`,
@@ -47,11 +41,11 @@ export default async function Page({
   params,
   searchParams,
 }: {
-  params: { slug: string };
-  searchParams: { page?: string; search?: string };
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page?: string; search?: string }>;
 }) {
-  const { slug } = params;
-  const { page: pageParam, search } = searchParams || {};
+  const { slug } = await params;
+  const { page: pageParam, search } = (await searchParams) || {};
 
   const page = pageParam ? parseInt(pageParam, 10) : 1;
   const postsPerPage = 9;
@@ -90,9 +84,7 @@ export default async function Page({
           </Prose>
 
           <div className="space-y-4">
-            <Suspense fallback={<div className="h-10 bg-muted rounded animate-pulse" />}>
-              <SearchInput defaultValue={search} />
-            </Suspense>
+            <SearchInput defaultValue={search} />
 
             <FilterPosts
               authors={authors}

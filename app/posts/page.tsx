@@ -147,11 +147,7 @@ export default async function Page({
           {posts.length > 0 ? (
             <div className="grid md:grid-cols-3 gap-4">
               {posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  selectedCategorySlug={selectedCategoryForUI}
-                />
+                <PostCard key={post.id} post={post} />
               ))}
             </div>
           ) : (
